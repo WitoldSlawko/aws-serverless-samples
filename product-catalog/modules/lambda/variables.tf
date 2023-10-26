@@ -4,8 +4,13 @@ variable "description" {
   default = null
 }
 
-variable "sqs_queue_arn" {
-  default = null
+# variable "sqs_queue_arn" {
+#   default = null
+# }
+
+variable "sqs_queues_arns" {
+  type = set(string)
+  default = []
 }
 
 variable "image_uri" {

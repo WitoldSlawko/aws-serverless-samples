@@ -6,6 +6,7 @@ module "api_gateway_v2" {
   acm_cert_arn = data.aws_acm_certificate.acm_cert.arn
 
   sqs_intergrations = local.sqs_intergrations
+  lambda_intergrations = local.lambda_intergrations
 }
 
 module "route53_alias_record" {

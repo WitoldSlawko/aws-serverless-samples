@@ -19,3 +19,13 @@ data "terraform_remote_state" "sqs_lambda_create_product_svc" {
     dynamodb_table = "terraform_lock"
   }
 }
+
+data "terraform_remote_state" "lambda_get_products_svc" {
+  backend = "s3"
+  config = {
+    bucket         = "witold-slawko-demo-ks-terraform-backend"
+    key            = "poc/product-catalog/lambda-get-products-svc/terraform.state"
+    region         = "eu-west-1"
+    dynamodb_table = "terraform_lock"
+  }
+}

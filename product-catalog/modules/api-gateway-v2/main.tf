@@ -19,7 +19,7 @@ resource "aws_iam_role" "api_gw_role" {
   })
 }
 
-resource "aws_iam_role_policy" "webhook_sqs" {
+resource "aws_iam_role_policy" "webhook_sqs_policy" {
   count = var.sqs_intergrations != {} ? 1 : 0
   name = "${var.prefix_name}-${var.environment}-api-gw-sqs-policy"
   role = aws_iam_role.api_gw_role.name
@@ -37,25 +37,60 @@ resource "aws_iam_role_policy" "webhook_sqs" {
   })
 }
 
-resource "aws_apigatewayv2_integration" "webhook_integration" {
+resource "aws_apigatewayv2_integration" "sqs_integration" {
   for_each = var.sqs_intergrations
   api_id              = aws_apigatewayv2_api.api_gw_v2.id
   credentials_arn     = aws_iam_role.api_gw_role.arn
   integration_type    = "AWS_PROXY"
   integration_subtype = "SQS-SendMessage"
   request_parameters = {
-    "QueueUrl"    = each.value["sqs_url"] # var.sqs_queue_url
+    "QueueUrl"    = each.value["sqs_url"]
     "MessageBody" = "$request.body"
     "MessageDeduplicationId" = join("", tolist(["$request.header.timestamp"]))
     "MessageGroupId" = join("", tolist(["$request.header.timestamp"]))
   }
 }
 
-resource "aws_apigatewayv2_route" "webhook_route" {
+resource "aws_apigatewayv2_route" "sqs_route" {
   for_each = var.sqs_intergrations
   api_id    = aws_apigatewayv2_api.api_gw_v2.id
   route_key = "${each.value["rest_method"]} /${each.value["webhook_path"]}"
-  target    = "integrations/${aws_apigatewayv2_integration.webhook_integration[each.key].id}"
+  target    = "integrations/${aws_apigatewayv2_integration.sqs_integration[each.key].id}"
+}
+
+resource "aws_iam_role_policy" "webhook_lambda_policy" {
+  count = var.lambda_intergrations != {} ? 1 : 0
+  name = "${var.prefix_name}-${var.environment}-api-gw-lambda-policy"
+  role = aws_iam_role.api_gw_role.name
+  policy = jsonencode({
+    "Version" = "2012-10-17"
+    "Statement" = [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "lambda:*",
+        ],
+        "Resource" : local.lambda_arns != [] ? local.lambda_arns : ["*"]
+      }
+    ]
+  })
+}
+
+resource "aws_apigatewayv2_integration" "lambda_integration" {
+  for_each = var.lambda_intergrations
+  api_id              = aws_apigatewayv2_api.api_gw_v2.id
+  integration_type    = "AWS_PROXY"
+  credentials_arn     = aws_iam_role.api_gw_role.arn
+  connection_type           = "INTERNET"
+   integration_method        = each.value["rest_method"]
+  integration_uri = each.value["invoke_arn"]
+}
+
+resource "aws_apigatewayv2_route" "lambda_route" {
+  for_each = var.lambda_intergrations
+  api_id    = aws_apigatewayv2_api.api_gw_v2.id
+  route_key = "${each.value["rest_method"]} /${each.value["webhook_path"]}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration[each.key].id}"
 }
 
 resource "aws_cloudwatch_log_group" "api_gw_cw_log_group" {
@@ -85,12 +120,6 @@ resource "aws_iam_role_policy" "webhook_cw_policy" {
 }
 
 resource "aws_apigatewayv2_stage" "webhook" {
-
-  # lifecycle {
-  #   replace_triggered_by = [
-  #     null_resource.refresher.id
-  #   ]
-  # }
   lifecycle {
     ignore_changes = [
       default_route_settings,
@@ -127,8 +156,9 @@ resource "aws_apigatewayv2_domain_name" "api_gw_domain" {
   }
 }
 
-# resource "null_resource" "refresher" {
-#   triggers = {
-#     timestamp = "${replace("${timestamp()}", "/[-| |T|Z|:]/", "")}"
-#   }
-# }
+resource "aws_apigatewayv2_api_mapping" "api_gw_mapping" {
+  count = var.acm_cert_arn != null ? 1 : 0
+  api_id      = aws_apigatewayv2_api.api_gw_v2.id
+  domain_name = aws_apigatewayv2_domain_name.api_gw_domain[0].id
+  stage       = aws_apigatewayv2_stage.webhook.id
+}

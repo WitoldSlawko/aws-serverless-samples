@@ -73,14 +73,16 @@ resource "aws_lambda_function_event_invoke_config" "event_invoke_config" {
 }
 
 resource "aws_lambda_event_source_mapping" "sqs_event_source_mapping" {
-  event_source_arn  = var.sqs_queue_arn
+  for_each = var.sqs_queues_arns
+  event_source_arn  = each.value # var.sqs_queue_arn
   function_name     = aws_lambda_function.lambda.arn
 }
 
 resource "aws_lambda_permission" "sqs_invoke_permissions" {
+  for_each = var.sqs_queues_arns
   statement_id  = "AllowExecutionFromSQS"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda.function_name
   principal     = "sqs.amazonaws.com"
-  source_arn    = var.sqs_queue_arn
+  source_arn    = each.value # var.sqs_queue_arn
 }
