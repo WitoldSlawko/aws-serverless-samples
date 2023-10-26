@@ -7,5 +7,5 @@ locals {
 }
 
 variable "app_name" {
-  default = "get-products"
+  default = "create-product"
 }

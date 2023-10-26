@@ -29,7 +29,7 @@ resource "aws_iam_role_policy" "webhook_sqs" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "sqs:SendMessage",
+          "sqs:*",
         ],
         "Resource" : local.sqs_arns != [] ? local.sqs_arns : ["*"]
       }
@@ -47,9 +47,7 @@ resource "aws_apigatewayv2_integration" "webhook_integration" {
     "QueueUrl"    = each.value["sqs_url"] # var.sqs_queue_url
     "MessageBody" = "$request.body"
     "MessageDeduplicationId" = join("", tolist(["$request.header.timestamp"]))
-    # "MessageGroupId" = join("", tolist(["$request.body.workflow_job.status", "$request.body.workflow_job.run_id"]))
-    # "MessageGroupId" = join("", tolist(["$request.body.workflow_job.run_id", "$request.body.workflow_job.status"]))
-    # "MessageDeduplicationId" = join("", tolist(["$request.body.workflow_job.run_id", "$request.body.workflow_job.status"]))
+    "MessageGroupId" = join("", tolist(["$request.header.timestamp"]))
   }
 }
 
@@ -87,6 +85,12 @@ resource "aws_iam_role_policy" "webhook_cw_policy" {
 }
 
 resource "aws_apigatewayv2_stage" "webhook" {
+
+  # lifecycle {
+  #   replace_triggered_by = [
+  #     null_resource.refresher.id
+  #   ]
+  # }
   lifecycle {
     ignore_changes = [
       default_route_settings,
@@ -122,3 +126,9 @@ resource "aws_apigatewayv2_domain_name" "api_gw_domain" {
     security_policy = "TLS_1_2"
   }
 }
+
+# resource "null_resource" "refresher" {
+#   triggers = {
+#     timestamp = "${replace("${timestamp()}", "/[-| |T|Z|:]/", "")}"
+#   }
+# }

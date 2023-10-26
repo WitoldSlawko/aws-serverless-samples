@@ -9,10 +9,10 @@ locals {
 
   sqs_intergrations = {
     get_products_svc = {
-        sqs_arn = data.terraform_remote_state.sqs_lambda_getproducts_svc.outputs.sqs_arn
-        sqs_url = data.terraform_remote_state.sqs_lambda_getproducts_svc.outputs.sqs_url
-        rest_method = "GET"
-        webhook_path = "get-products"
+        sqs_arn = data.terraform_remote_state.sqs_lambda_create_product_svc.outputs.sqs_arn
+        sqs_url = data.terraform_remote_state.sqs_lambda_create_product_svc.outputs.sqs_url
+        rest_method = "POST"
+        webhook_path = "create-product"
     }
   }
 }

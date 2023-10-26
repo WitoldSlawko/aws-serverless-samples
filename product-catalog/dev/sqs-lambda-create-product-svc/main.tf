@@ -14,7 +14,7 @@ module "lambda" {
         handler = "lambda-script.handler"
     }
     env_variables = {
-      Environment = local.environment
+      DYNAMODB_NAME = data.terraform_remote_state.dynamodb.outputs.dynamodb_table_name
     }
     extra_policy_actions = toset(["dynamodb:*", "sqs:*"])
     sqs_queue_arn = module.sqs_queue.sqs_arn

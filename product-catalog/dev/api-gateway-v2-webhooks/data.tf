@@ -10,11 +10,11 @@ data "aws_route53_zone" "public_hosted_zone" {
   private_zone = false
 }
 
-data "terraform_remote_state" "sqs_lambda_getproducts_svc" {
+data "terraform_remote_state" "sqs_lambda_create_product_svc" {
   backend = "s3"
   config = {
     bucket         = "witold-slawko-demo-ks-terraform-backend"
-    key            = "poc/product-catalog/sqs-lambda-getproducts-svc/terraform.state"
+    key            = "poc/product-catalog/sqs-lambda-create-product-svc/terraform.state"
     region         = "eu-west-1"
     dynamodb_table = "terraform_lock"
   }

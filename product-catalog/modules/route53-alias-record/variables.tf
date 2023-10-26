@@ -1,4 +1,4 @@
-variable "exposed_domain_name" {}
+variable "record_domain_name" {}
 
 variable "hosted_zone_id" {}
 
