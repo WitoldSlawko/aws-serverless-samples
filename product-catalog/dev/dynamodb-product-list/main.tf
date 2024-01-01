@@ -1,5 +1,5 @@
 module "dynamodb_product_list" {
-  source = "../../modules/dynamodb-table"
+  source = "../../../modules/dynamodb-table"
 
   dynamodb_table_name = local.dynamodb_table_name
   hash_key_name = var.hash_key_name

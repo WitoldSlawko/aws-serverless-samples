@@ -4,7 +4,13 @@ variable "hash_key_name" {}
 
 variable "range_key_name" {}
 
-variable "gsi_name" {}
+variable "gsi_name" {
+    default = null
+}
+
+variable "lsi_name" {
+    default = null
+}
 
 variable "billing_mode" {
     default = "PROVISIONED"

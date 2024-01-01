@@ -1,6 +1,6 @@
 module "lambda" {
     depends_on = [null_resource.npm_install]
-    source = "../../modules/lambda"
+    source = "../../../modules/lambda"
     function_name = "${var.app_name}-lambda"
     zip_file = {
         filename         = "${path.module}/assets/lambda-script.js"
