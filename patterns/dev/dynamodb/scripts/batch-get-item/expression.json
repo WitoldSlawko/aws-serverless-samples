@@ -1,0 +1,15 @@
+{
+    "ShopStore": {
+        "Keys": [
+            {
+                "Title": {"S": "Book 101 Title"},
+                "Id": {"N": "101"}
+            },
+            {
+                "Title": {"S": "18-Bike-201"},
+                "Id": {"N": "201"}
+            }
+        ],
+        "ProjectionExpression":"Price"
+    }
+}

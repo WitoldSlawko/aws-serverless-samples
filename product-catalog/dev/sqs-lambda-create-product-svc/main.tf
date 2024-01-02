@@ -1,12 +1,12 @@
 module "sqs_queue" {
-  source        = "../../modules/sqs"
+  source        = "../../../modules/sqs"
   prefix_name = "${var.app_name}-sqs"
   environment   = local.environment
 }
 
 module "lambda" {
     depends_on = [null_resource.npm_install]
-    source = "../../modules/lambda"
+    source = "../../../modules/lambda"
     function_name = "${var.app_name}-lambda"
     zip_file = {
         filename         = "${path.module}/assets/lambda-script.js"
